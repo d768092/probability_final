@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-n = int(sys.argv[1])
 
 def over(A,B):
     a = bin(A)[2:].zfill(n)
@@ -12,13 +11,15 @@ def over(A,B):
             ans += 1
     return ans
 
-total = 1<<n
-rate = np.zeros((total,total))
-for i in range(total):
-    for j in range(total):
-        if i != j:
-            oddB = over(i,i)-over(i,j)
-            oddA = over(j,j)-over(j,i)
-            rate[i][j] = round(oddA/(oddA+oddB),3)
+if __name__ == '__main__':
+    n = int(sys.argv[1])
+    total = 1<<n
+    rate = np.zeros((total,total))
+    for i in range(total):
+        for j in range(total):
+            if i != j:
+                oddB = over(i,i)-over(i,j)
+                oddA = over(j,j)-over(j,i)
+                rate[i][j] = round(oddA/(oddA+oddB),3)
 
-print(rate)
+    print(rate)
