@@ -15,19 +15,14 @@ def over(a,b,n):
     return ans
 
 @jit(nopython=True)
-def init_multi(i,j,n):
-    if i == j:
-        return 0
-    BB, BA, AB, AA = over(j, j,n), over(j, i,n), over(i, j,n), over(i, i,n)
-    return (BB - BA) / (BB - BA - AB + AA)
-
-@jit(nopython=True,parallel=True)
 def init(n):
     total = 1 << n
     rate = np.empty((total, total))
-    for i in prange(total):
-        for j in prange(total):
-            rate[i,j]=init_multi(i, j, n)
+    for i in range(total):
+        for j in range(total):
+            if i != j:
+                BB, BA, AB, AA = over(j, j,n), over(j, i,n), over(i, j,n), over(i, i,n)
+                rate[i,j]=(BB - BA) / (BB - BA - AB + AA)
     #rate = np.array([init_multi(i, j, n) for i in range(total) for j in range(total)]).reshape(total, total)
     return rate
 
@@ -48,7 +43,6 @@ def multi(tup):
 def change1bit(rate, n):
     total = 1<<n
     rate -= np.eye(total)
-    ans = np.empty((total, 4), dtype=np.float64)
     poo=Pool(os.cpu_count())
     return np.array(poo.map(multi,[(rate,n,i) for i in range(total)]))   
     
