@@ -2,7 +2,7 @@ from multiprocessing import Pool
 import os
 import sys
 import numpy as np
-from numba import jit
+from numba import jit, prange
 
 @jit(nopython=True)
 def over(a,b,n):
@@ -15,15 +15,20 @@ def over(a,b,n):
     return ans
 
 @jit(nopython=True)
+def init_multi(i,j,n):
+    if i == j:
+        return 0
+    BB, BA, AB, AA = over(j, j,n), over(j, i,n), over(i, j,n), over(i, i,n)
+    return (BB - BA) / (BB - BA - AB + AA)
+
+@jit(nopython=True,parallel=True)
 def init(n):
-    total = 1<<n
-    rate = np.zeros((total,total))
-    for i in range(total):
-        for j in range(total):
-            if i == j:
-                continue
-            BB, BA, AB, AA = over(j, j,n), over(j, i,n), over(i, j,n), over(i, i,n)
-            rate[i, j] = (BB - BA) / (BB - BA - AB + AA)
+    total = 1 << n
+    rate = np.empty((total, total))
+    for i in prange(total):
+        for j in prange(total):
+            rate[i,j]=init_multi(i, j, n)
+    #rate = np.array([init_multi(i, j, n) for i in range(total) for j in range(total)]).reshape(total, total)
     return rate
 
 def multi(tup):
