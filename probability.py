@@ -39,14 +39,13 @@ for i in range(total):
     print('A='+str(i),'B='+str(min_index),'pro='+str(pro[i][min_index]))
 
 print('change 1 bit:')
-pro = pro - np.eye(total)
+pro -= np.eye(total)
 for i in range(total):
     subpro = pro.copy()
     choice=set([i^(1<<j) for j in range(n)])
     choice.add(i)
-    for j in range(total):
-        if j not in choice:
-            subpro[j,:]*=0
+
+    subpro[[ j for j in range(total) if j not in choice]]=0
     max_index=np.argmax(subpro,axis=0)
     subpro=np.max(subpro,axis=0)
     min_index = np.argmin(subpro)
