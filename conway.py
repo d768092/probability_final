@@ -17,7 +17,7 @@ def over(a,b,n):
 @jit(nopython=True)
 def init(n):
     total = 1 << n
-    rate = np.empty((total, total))
+    rate = np.full((total, total),0.5)
     for i in range(total):
         for j in range(total):
             if i != j:
@@ -37,6 +37,7 @@ def multi(tup):
     max_index=np.argmax(subpro,axis=0)
     subpro=np.max(subpro,axis=0)
     min_index = np.argmin(subpro)
+    # A, B, A, rate
     return i, min_index, max_index[min_index], subpro[min_index]
 
 
@@ -62,19 +63,26 @@ def main(n):
     total = 1<<n
     rate = init(n)
 
-    '''
     print('basic:')
-    for i in range(total):
-        min_index = np.argmin(rate[i])
-        print('A=' + str(i), 'B=' + str(min_index), 'rate=' + str(rate[i][min_index]))
-    '''
-     
+    for i, row in enumerate(rate):
+        min_index = np.argmin(row)
+        print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(row[min_index]))
+
+    print(' '*n, *['%7s'%bin(i)[2:].zfill(n) for i in range(total)])
+    for i,row in enumerate(rate):
+        print(bin(i)[2:].zfill(n),end=' ')
+        for item in row:
+            print('%*.3f' % (n+4,item), end=' ')
+        print()
+
     print('change 1 bit:')
     ch1 = change1bit(rate, n)
     max_index = np.max(ch1[:, 3])
     for item in ch1[ch1[:, 3] == max_index]:
         print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
 
+    for item in ch1[ch1[:, 3] != max_index]:
+        print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
 
 
 
