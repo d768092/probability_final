@@ -34,7 +34,7 @@ def multi(tup):
     choice.add(i)
 
     subpro[[ j for j in range(total) if j not in choice]]=0
-    max_index=np.argmax(subpro,axis=0)
+    max_index = np.argmax(subpro, axis=0)
     subpro=np.max(subpro,axis=0)
     min_index = np.argmin(subpro)
     # A, B, A, rate
@@ -43,7 +43,6 @@ def multi(tup):
 
 def change1bit(rate, n):
     total = 1<<n
-    rate -= np.eye(total)
     poo=Pool(os.cpu_count())
     return np.array(poo.map(multi,[(rate,n,i) for i in range(total)]))   
     
@@ -68,13 +67,14 @@ def main(n):
         min_index = np.argmin(row)
         print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(row[min_index]))
 
+    '''
     print(' '*n, *['%7s'%bin(i)[2:].zfill(n) for i in range(total)])
     for i,row in enumerate(rate):
         print(bin(i)[2:].zfill(n),end=' ')
         for item in row:
             print('%*.3f' % (n+4,item), end=' ')
         print()
-
+    '''
     print('change 1 bit:')
     ch1 = change1bit(rate, n)
     max_index = np.max(ch1[:, 3])
