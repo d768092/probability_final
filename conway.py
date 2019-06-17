@@ -62,28 +62,32 @@ def main(n):
     total = 1<<n
     rate = init(n)
 
-    print('basic:')
-    for i, row in enumerate(rate):
-        min_index = np.argmin(row)
-        print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(row[min_index]))
-
     '''
-    print(' '*n, *['%7s'%bin(i)[2:].zfill(n) for i in range(total)])
+    print('basic:')
+    max_val_index = np.min(rate,axis=1)==np.max(np.min(rate,axis=1))
+    for i in np.arange(rate.shape[0])[max_val_index]:
+        min_index = np.argmin(rate[i])
+        print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(rate[i,min_index]))
+    for i in np.arange(rate.shape[0])[~max_val_index]:
+        min_index = np.argmin(rate[i])
+        print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(rate[i,min_index]))
+    '''
+    print(' '*n, *[' %*s'%(max(n,5), bin(i)[2:].zfill(n)) for i in range(total)])
     for i,row in enumerate(rate):
         print(bin(i)[2:].zfill(n),end=' ')
         for item in row:
-            print('%*.3f' % (n+4,item), end=' ')
+            print(' %*.3f' % (max(n,5),item), end=' ')
         print()
-    '''
     print('change 1 bit:')
     ch1 = change1bit(rate, n)
     max_index = np.max(ch1[:, 3])
     for item in ch1[ch1[:, 3] == max_index]:
         print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
 
+    '''
     for item in ch1[ch1[:, 3] != max_index]:
         print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
-
+    '''
 
 
 if __name__ == "__main__":
