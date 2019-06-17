@@ -1,8 +1,8 @@
-from multiprocessing import Pool
 import os
 import sys
 import numpy as np
 from numba import jit, prange
+from joblib import Parallel, delayed
 
 @jit(nopython=True)
 def over(a,b,n):
@@ -26,8 +26,7 @@ def init(n):
     #rate = np.array([init_multi(i, j, n) for i in range(total) for j in range(total)]).reshape(total, total)
     return rate
 
-def multi(tup):
-    rate, n, i = tup[0], tup[1], tup[2]
+def multi(rate, n, i):
     total = 1 << n
     subpro = rate.copy()
     choice=set([i^(1<<j) for j in range(n)])
@@ -43,8 +42,7 @@ def multi(tup):
 
 def change1bit(rate, n):
     total = 1<<n
-    poo=Pool(os.cpu_count())
-    return np.array(poo.map(multi,[(rate,n,i) for i in range(total)]))   
+    return np.array(Parallel(n_jobs=os.cpu_count(), backend="threading")(delayed(multi)(rate,n,i) for i in range(total)))   
     
 
 
@@ -72,18 +70,20 @@ def main(n):
         min_index = np.argmin(rate[i])
         print('A=' + bin(i)[2:].zfill(n), 'B=' + bin(min_index)[2:].zfill(n), 'rate=' + str(rate[i,min_index]))
     '''
+    '''
     print(' '*n, *[' %*s'%(max(n,5), bin(i)[2:].zfill(n)) for i in range(total)])
     for i,row in enumerate(rate):
         print(bin(i)[2:].zfill(n),end=' ')
         for item in row:
             print(' %*.3f' % (max(n,5),item), end=' ')
         print()
+    '''
     print('change 1 bit:')
     ch1 = change1bit(rate, n)
     max_index = np.max(ch1[:, 3])
     for item in ch1[ch1[:, 3] == max_index]:
         print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
-
+    
     '''
     for item in ch1[ch1[:, 3] != max_index]:
         print('A=',bin(int(item[0]))[2:].zfill(n),' B=',bin(int(item[1]))[2:].zfill(n),' A=',bin(int(item[2]))[2:].zfill(n),' rate=',item[3],sep='')
