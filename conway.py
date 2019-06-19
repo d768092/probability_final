@@ -2,7 +2,9 @@ import os
 import sys
 import numpy as np
 from numba import jit, prange
+import numba as nb
 from joblib import Parallel, delayed
+from multiprocessing import Pool
 
 @jit(nopython=True)
 def over(a,b,n):
@@ -28,23 +30,26 @@ def init(n):
 
 def multi(rate, n, i):
     total = 1 << n
-    subpro = rate.copy()
-    choice=set([i^(1<<j) for j in range(n)])
-    choice.add(i)
+    subpro=rate[[i^(1<<j) for j in range(n)]+[i]]
 
-    subpro[[ j for j in range(total) if j not in choice]]=0
-    max_index = np.argmax(subpro, axis=0)
-    subpro=np.max(subpro,axis=0)
-    min_index = np.argmin(subpro)
+    A_choices = np.argmax(subpro, axis=0)
+    '''
+    if i == 4:
+        print([i^(1<<j) for j in range(n)]+[i],subpro,sep='\n')#print(list(map(bin,list(i^(1<<A_choices))+[i])))'''
+    subpro = np.max(subpro,axis=0)
+    '''if i==4:
+        print(subpro)'''
+    B_choice = np.argmin(subpro)
+    A_choice2 = i^(1<<A_choices[B_choice]) if A_choices[B_choice]<n else i
     # A, B, A, rate
-    return i, min_index, max_index[min_index], subpro[min_index]
+    return i, B_choice, A_choice2, subpro[B_choice]
 
 
 def change1bit(rate, n):
     total = 1<<n
     return np.array(Parallel(n_jobs=os.cpu_count(), backend="threading")(delayed(multi)(rate,n,i) for i in range(total)))   
     
-
+        
 
 def main(n):
     '''total = 1<<n
