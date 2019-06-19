@@ -7,11 +7,13 @@ from joblib import Parallel, delayed
 from multiprocessing import Pool
 
 @jit(nopython=True)
-def over(a,b,n):
-    ans = 0
+def over(a,b,n, p=0.5):
+    ans = 0.0
+    now_p=1.0
     for i in range(n-1,-1,-1):
-        ans <<= 1
-        ans += int(a ^ b == 0)
+        #ans <<= 1
+        ans += int(a ^ b == 0)*now_p
+        now_p *= p if (b&1) == 1 else 1-p
         a &= (1 << i) - 1
         b >>= 1
     return ans
@@ -83,16 +85,6 @@ def change1bit_less_mem(n):
         
 
 def main(n):
-    '''total = 1<<n
-    rate = np.zeros((total,total))
-    for i in range(total):
-        for j in range(total):
-            if i != j:
-                oddB = over(i,i)-over(i,j)
-                oddA = over(j,j)-over(j,i)
-                rate[i][j] = round(oddA/(oddA+oddB),3)
-
-    print(rate) '''
     total = 1<<n
     #rate = init(n)
 
